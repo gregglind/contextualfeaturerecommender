@@ -18,6 +18,10 @@ var ui = require("./ui");
 var tabs = require("sdk/tabs");
 var FHR = require("./FHR");
 
+var sp = require("simple-prefs");
+sp.on("config.ArmInt",function () {
+
+})
 
 function getAddons(callback){
 	AddonManager.getAllAddons(function(aAddons) {
@@ -103,26 +107,41 @@ function getAddonVersion(){
 	return require("sdk/self").version;
 }
 
+/**
+ 
+ 	Algorithm:
+ 	- if static.armInt, return arm for that
+ 	- if arm already chosen, return that.
+ 	- return randomArm
+
+*/
 function getArm(){
-
 	console.log("in getArm");
+	let statics = system.staticArgs
+	let weights = "arm_weights" in statics ? statics.arm_weights : config.DEFAULT_ARM_WEIGHTS;
 
-	
-
-	if (!isThisFirstTime())
-		return JSON.parse(prefs["config.arm"]);
-		
-	else {
-		if ("arm_weights" in system.staticArgs){
-			prefs["config.arm"] = JSON.stringify(arms.assignRandomArm(system.staticArgs.arm_weights));
-			return JSON.parse(prefs["config.arm"]);
-		}
-
-		prefs["config.arm"] = JSON.stringify(arms.assignRandomArm(config.DEFAULT_ARM_WEIGHTS));
-		return JSON.parse(prefs["config.arm"]);
-		
+	let setArmPref = function(info) {
+		prefs['config.arm'] = JSON.stringify(info);
 	}
 
+	let arminfo;
+	// force.
+	if ("armInt" in statics) {
+		let which = Number(statics['armInt']);
+		prefs['config.armInt'] = which;  // triggers listener as well, belt and suspenders, gross.
+		arminfo = JSON.stringify(arms[which]);
+		setArmPref(JSON.stringify(arminfo));
+	}
+	// 
+	else if (prefs["config.arm"]) {
+		arminfo = JSON.parse(prefs["config.arm"]);
+	}
+		
+	else {
+		arminfo = arms.assignRandomArm(weights);
+		setArmPref(arminfo);
+	};
+	return arminfo;
 }
 
 function setDefaultNotification(){

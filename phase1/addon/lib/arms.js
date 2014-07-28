@@ -19,5 +19,5 @@ function assignRandomArm(weightsArr){
 	return arms[require("./utils").weightedRandomInt(weightsArr)];  
 }
 
-
+exports.arms = arms;
 exports.assignRandomArm = assignRandomArm;
