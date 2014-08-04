@@ -36,7 +36,7 @@ function init(){
 function getButton(clickHandler){
 	return ActionButton({
 		id: "init-button",
-		label: "Press Me!",
+		label: "Recommend Feature",
 		icon: {
 			"16": "./ui/icons/lightbulb_bw.png"
 		},

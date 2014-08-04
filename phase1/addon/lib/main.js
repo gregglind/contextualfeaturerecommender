@@ -49,6 +49,32 @@ function reset(){
 		delete prefs[key];
 }
 
+// if the button goes, uninstall addon.
+//var 
+//{"placements":{"PanelUI-contents":["edit-controls","zoom-controls","new-window-button","privatebrowsing-button","save-page-button","print-button","history-panelmenu","fullscreen-button","find-button","preferences-button","add-ons-button","developer-button"],"addon-bar":["addonbar-closebutton","status-bar"],"PersonalToolbar":["personal-bookmarks"],"nav-bar":["urlbar-container","search-container","webrtc-status-button","bookmarks-menu-button","downloads-button","home-button","social-share-button","action-button--featurerecommenderinsightsmozillacom-init-button"],"TabsToolbar":["tabbrowser-tabs","new-tab-button","alltabs-button"]},"seen":["action-button--featurerecommenderinsightsmozillacom-init-button"],"dirtyAreaCache":["PersonalToolbar","nav-bar","TabsToolbar"],"newElementCount":0}
+
+let allprefs = require("sdk/preferences/event-target").PrefsTarget({branchName:""});
+allprefs.on("browser.uiCustomization.state", function (pref) {
+	let addonid = require('sdk/self').id;
+	console.log("PREF:", allprefs.prefs[pref]);
+	let data = JSON.parse(allprefs.prefs[pref]);
+	let bid = "action-button--featurerecommenderinsightsmozillacom-init-button";
+	let pl = data.placements;
+	let has = (arr, el) => arr.indexOf(el) >= 0;
+
+	if (has(pl["nav-bar"],bid) ||
+		has(pl["PersonalToolbar"],bid) ||
+		has(pl["addon-bar"],bid) ) 
+	{
+		console.log("button is fine!")
+		// okay!
+	} else {
+		// send final message?
+		console.log("button moved, uninstalling addon");
+  		require("sdk/addon/installer").uninstall(addonid);
+	}
+});
+
 //start listening when button is clicked
 var main = exports.main = function (options, callbacks){
 	console.log(require("sdk/self").data.url());
